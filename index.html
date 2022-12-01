@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <title>Etch-A-Sketch</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Etch-A-Sketch</h1>
+    </header>
+
+    <div class="main">
+        <div class="settings">
+            <div>
+                <p>Pick a color!</p>
+                <input type="color" value="#e66465">
+            </div>
+            <button>Color mode</button>
+            <button>Rainbow mode</button>
+            <button>Grayscale mode</button>
+            <button>Eraser</button>
+            <button>Clear</button>
+            <div class="slidecontainer">
+              <p>Grid size</p>
+              <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+            </div>
+        </div>
+        <div class="grid"></div>
+    </div>
+
+    <footer>
+    </footer>
+    
+</body>
+</html>
