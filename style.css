@@ -15,11 +15,13 @@
     gap: 1rem;
 }
 
-.grid {
+#grid {
     width: 500px;
     height: 500px;
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    grid-template-rows: repeat(16, 1fr);
     border: 5px solid pink;
+}
+
+button.active {
+    background-color: cornflowerblue;
 }

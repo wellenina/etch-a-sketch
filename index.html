@@ -16,20 +16,24 @@
     <div class="main">
         <div class="settings">
             <div>
-                <p>Pick a color!</p>
-                <input type="color" value="#e66465">
+                <input type="color" id="brush-color" name="brush-color">
+                <label for="brush-color">Brush Color</label>
             </div>
-            <button>Color mode</button>
-            <button>Rainbow mode</button>
-            <button>Grayscale mode</button>
-            <button>Eraser</button>
-            <button>Clear</button>
+            <div>
+                <input type="color" id="bg-color" name="bg-color">
+                <label for="bg-color">Background Color</label>
+            </div>
+            <button id="color" class="active">Color mode</button>
+            <button id="rainbow">Rainbow mode</button>
+            <button id="grayscale">Grayscale mode</button>
+            <button id="eraser">Eraser</button>
+            <button id="clear-btn">Clear</button>
             <div class="slidecontainer">
               <p>Grid size</p>
               <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
             </div>
         </div>
-        <div class="grid"></div>
+        <div id="grid"></div>
     </div>
 
     <footer>
