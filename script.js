@@ -58,7 +58,7 @@ const colorManager = {
 const clearBtn = document.getElementById('clear-btn');
 clearBtn.addEventListener('click', clear);
 
-//// slider - grid size --> not working yet
+document.getElementById('slider').addEventListener('input', resizeGrid);
 
 
 function changeCellColor(event) {
@@ -80,7 +80,7 @@ function createGrid() {
     for (let i = 0; i < (gridSize * gridSize); i++) {
         const cell = document.createElement('div');
         ['mouseenter', 'mousedown'].forEach(event => cell.addEventListener(event, changeCellColor));
-        cell.style.backgroundColor = DEFAULT_BACKGROUND_COLOR;
+        cell.style.backgroundColor = colorManager.eraser;
         cell.className = 'empty-cell';
         grid.appendChild(cell);
     };
@@ -117,6 +117,13 @@ function changeMode(event) {
 
 function clear() {
     Array.from(grid.children).forEach(cell => {cell.style.backgroundColor = colorManager.eraser; cell.className = 'empty-cell'} );
+}
+
+
+function resizeGrid(event) {
+    gridSize = event.target.value;
+    grid.replaceChildren();
+    createGrid();
 }
 
 
