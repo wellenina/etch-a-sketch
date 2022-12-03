@@ -58,7 +58,7 @@ const colorManager = {
 const clearBtn = document.getElementById('clear-btn');
 clearBtn.addEventListener('click', clear);
 
-document.getElementById('slider').addEventListener('input', resizeGrid);
+document.getElementById('slider').addEventListener('change', resizeGrid);
 
 
 function changeCellColor(event) {
@@ -122,6 +122,7 @@ function clear() {
 
 function resizeGrid(event) {
     gridSize = event.target.value;
+    document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
     grid.replaceChildren();
     createGrid();
 }
