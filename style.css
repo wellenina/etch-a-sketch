@@ -22,6 +22,14 @@
     border: 5px solid pink;
 }
 
+:root {
+    --hover-cell-color: #ff69b4;
+}
+  
+#grid > div:hover {
+    background-color: var(--hover-cell-color) !important;
+}
+
 button.active {
     background-color: cornflowerblue;
 }
