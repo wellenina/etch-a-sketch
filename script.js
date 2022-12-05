@@ -80,7 +80,6 @@ function setHoverCellColor(newColor) {
 function createGrid() {
     for (let i = 0; i < (gridSize * gridSize); i++) {
         const cell = document.createElement('div');
-        //['mouseenter', 'mousedown'].forEach(event => cell.addEventListener(event, changeCellColor));
         cell.style.backgroundColor = colorManager.eraser;
         cell.className = 'empty-cell';
         grid.appendChild(cell);
@@ -122,10 +121,13 @@ function clear() {
 
 
 function resizeGrid(event) {
-    gridSize = event.target.value;
-    document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
-    grid.replaceChildren();
-    createGrid();
+    const text = 'Resizing the grid will delete your painting,\nare you sure you want to proceed?';
+    if (confirm(text)) {
+        gridSize = event.target.value;
+        document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
+        grid.replaceChildren();
+        createGrid();
+    }
 }
 
 
