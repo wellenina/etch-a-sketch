@@ -10,7 +10,9 @@ const grid = document.getElementById('grid');
 let isMousedown = false;
 grid.addEventListener('mousedown', () => {isMousedown = true;});
 window.addEventListener('mouseup', () => {isMousedown = false;});
-['mouseover', 'mousedown'].forEach(event => grid.addEventListener(event, changeCellColor));
+grid.addEventListener('touchstart', () => {isMousedown = true;});
+window.addEventListener('touchend', () => {isMousedown = false;});
+['mousedown', 'mouseover', 'touchstart', 'touchmove'].forEach(event => grid.addEventListener(event, changeCellColor));
 
 // color pickers
 const brushColorPicker = document.getElementById('brush-color');
@@ -63,7 +65,7 @@ document.getElementById('slider').addEventListener('change', resizeGrid);
 
 
 function changeCellColor(event) {
-    if (event.type === 'mouseover' && !isMousedown) { return; };
+    if ((event.type === 'mouseover' || event.type === 'touchmove') && !isMousedown) { return; };
     const cell = event.target;
     currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
     cell.style.backgroundColor = colorManager[currentMode];
