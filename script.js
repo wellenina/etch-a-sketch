@@ -10,9 +10,13 @@ const grid = document.getElementById('grid');
 let isMousedown = false;
 grid.addEventListener('mousedown', () => {isMousedown = true;});
 window.addEventListener('mouseup', () => {isMousedown = false;});
-grid.addEventListener('touchstart', () => {isMousedown = true;});
-window.addEventListener('touchend', () => {isMousedown = false;});
-['mousedown', 'mouseover', 'touchstart', 'touchmove'].forEach(event => grid.addEventListener(event, changeCellColor));
+
+['mousedown', 'mouseover'].forEach(type => grid.addEventListener(type, (event) => {
+    if (event.type === 'mouseover' && !isMousedown) { return; };
+    changeCellColor(event.target);
+}));
+
+grid.addEventListener('touchmove', getTouchedCell);
 
 // color pickers
 const brushColorPicker = document.getElementById('brush-color');
@@ -63,20 +67,18 @@ clearBtn.addEventListener('click', clear);
 
 document.getElementById('slider').addEventListener('change', resizeGrid);
 
-
-function changeCellColor(event) {
-    if ((event.type === 'mouseover' || event.type === 'touchmove') && !isMousedown) { return; };
-    const cell = event.target;
-    currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
-    cell.style.backgroundColor = colorManager[currentMode];
-    if (currentMode === 'rainbow' || currentMode === 'grayscale') { colorManager.updateColor(); }
-}
-
-
-function setHoverCellColor(newColor) {
-    const r = document.querySelector(':root');
-    r.style.setProperty('--hover-cell-color', newColor);
-}
+const cellList = {
+    cells: [],
+    cellsInRows: [],
+  
+    update() {
+      this.cells = Array.from(grid.children);
+      this.cellsInRows = [];
+      for (let i = 0; i < gridSize; i++) {
+        this.cellsInRows.push(this.cells.slice(i*gridSize, i*gridSize+gridSize));
+      };
+    }
+  }
 
 
 function createGrid() {
@@ -88,6 +90,34 @@ function createGrid() {
     };
     grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
     grid.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+    cellList.update();
+}
+
+
+function getTouchedCell(event) {
+    if (event.touches.length > 1) { return; };
+    event.preventDefault();
+
+    const gridX = grid.getBoundingClientRect().x;
+    const gridY = grid.getBoundingClientRect().y;
+    const cellSize= grid.getBoundingClientRect().width / gridSize;
+    
+    const horizontalIndex = Math.floor((event.touches[0].clientX - gridX) / cellSize);
+    const verticalIndex = Math.floor((event.touches[0].clientY - gridY) / cellSize);
+    changeCellColor(cellList.cellsInRows[verticalIndex][horizontalIndex]);
+}
+
+
+function changeCellColor(cell) {
+    currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
+    cell.style.backgroundColor = colorManager[currentMode];
+    if (currentMode === 'rainbow' || currentMode === 'grayscale') { colorManager.updateColor(); }
+}
+
+
+function setHoverCellColor(newColor) {
+    const r = document.querySelector(':root');
+    r.style.setProperty('--hover-cell-color', newColor);
 }
 
 
