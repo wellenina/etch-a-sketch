@@ -16,6 +16,7 @@ window.addEventListener('mouseup', () => {isMousedown = false;});
     changeCellColor(event.target);
 }));
 
+
 grid.addEventListener('touchmove', getTouchedCell);
 
 // color pickers
@@ -31,7 +32,8 @@ const modeBtn = {
     color: document.getElementById('color'),
     rainbow: document.getElementById('rainbow'),
     grayscale: document.getElementById('grayscale'),
-    eraser: document.getElementById('eraser')
+    eraser: document.getElementById('eraser'),
+    fill: document.getElementById('fill')
 }
 for (const key in modeBtn) {
     modeBtn[key].addEventListener('click', changeMode);
@@ -43,9 +45,10 @@ const colorManager = {
     counter: 0,
   
     color: DEFAULT_BRUSH_COLOR,
-    rainbow: '#F1CEF4',
-    grayscale: '#e6e6e6',
+    rainbow: '',
+    grayscale: '',
     eraser: DEFAULT_BACKGROUND_COLOR,
+    fill: '',
 
     updateColor() {
         const colors = this[`${currentMode}Colors`];
@@ -58,12 +61,13 @@ const colorManager = {
         this.counter = 0;
         this.rainbow = '#F1CEF4';
         this.grayscale = '#e6e6e6';
+        this.fill = this.color;
     }
 }
 
-  
-const clearBtn = document.getElementById('clear-btn');
-clearBtn.addEventListener('click', clear);
+
+
+document.getElementById('clear-btn').addEventListener('click', clear);
 
 document.getElementById('slider').addEventListener('change', resizeGrid);
 
@@ -79,6 +83,64 @@ const cellList = {
       };
     }
   }
+
+
+  const bucket = {
+
+    currentColor: '',
+  
+    fill(target) {
+      this.currentColor = target.style.backgroundColor;
+  
+      //se il colore del secchiello è lo stesso del quadratino, non fare niente:
+      //if (this.currentColor === colorManager.color) { return; };
+  
+      target.style.backgroundColor = colorManager.color;
+      target.removeAttribute('class', 'empty-cell');
+      this.fillNearbyCells(target);
+    },
+
+    getNearbyCells(cells) {
+        let totalNearbyCells = [];
+      
+        for (const cell of cells) {
+            const index = cellList.cells.indexOf(cell);
+            const yIndex = Math.floor(index/gridSize);
+            const xIndex = index%gridSize;
+            const rowAbove = cellList.cellsInRows[yIndex-1];
+            const row = cellList.cellsInRows[yIndex];
+            const rowBelow = cellList.cellsInRows[yIndex+1];
+      
+            const nearbyCells = [];
+            if (rowAbove != undefined) { nearbyCells.push(rowAbove[xIndex]); };
+            nearbyCells.push(row[xIndex-1], row[xIndex +1]);
+            if (rowBelow != undefined) { nearbyCells.push(rowBelow[xIndex]); };
+      
+            totalNearbyCells = totalNearbyCells.concat(nearbyCells.filter(cell => cell != undefined && !totalNearbyCells.includes(cell)));
+        };
+      
+        return totalNearbyCells;
+      },
+
+    fillNearbyCells(...target) {
+        const neighborhood = this.getNearbyCells(target);
+        const toBeFilled = neighborhood.filter(cell => cell.style.backgroundColor === this.currentColor);
+        
+        if (toBeFilled.length) { // cioè se è maggiore di 0, quindi non è vuoto
+          toBeFilled.forEach(cell => {
+            cell.style.backgroundColor = colorManager.color;
+            cell.removeAttribute('class', 'empty-cell');
+            });
+          this.fillNearbyCells(...toBeFilled);
+        };
+      }
+  }
+
+grid.addEventListener('click', (event) => {
+    if (currentMode === 'fill') {
+        bucket.fill(event.target);
+    }
+})
 
 
 function createGrid() {
@@ -109,6 +171,7 @@ function getTouchedCell(event) {
 
 
 function changeCellColor(cell) {
+    if (currentMode === 'fill') { return; };
     currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
     cell.style.backgroundColor = colorManager[currentMode];
     if (currentMode === 'rainbow' || currentMode === 'grayscale') { colorManager.updateColor(); }
@@ -124,7 +187,7 @@ function setHoverCellColor(newColor) {
 function selectBrushColor(event) {
     const selectedColor = event.target.value;
     colorManager.color = selectedColor;
-    if (currentMode === 'color') { setHoverCellColor(selectedColor); };
+    if (currentMode === 'color' || currentMode === 'fill') { setHoverCellColor(selectedColor); };
 }
 
 function selectBgColor(event) {
