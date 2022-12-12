@@ -141,7 +141,7 @@ const cellList = {
   }
 
 grid.addEventListener('click', (event) => {
-    if (currentMode === 'fill') {
+    if (currentMode === 'fill' && event.target !== grid) {
         bucket.fill(event.target);
     }
 })
@@ -213,8 +213,8 @@ function selectBgColor(event) {
 }
 
 
-function changeMode(event) {
-    let newMode = event.target.id;
+function changeMode() {
+    let newMode = this.id;
     if (currentMode === newMode) { return; };
 
     modeBtn[currentMode].classList.toggle('active');
