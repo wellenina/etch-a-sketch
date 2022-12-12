@@ -211,13 +211,15 @@ function changeMode(event) {
 
 
 function clear() {
-    Array.from(grid.children).forEach(cell => {cell.style.backgroundColor = colorManager.eraser; cell.className = 'empty-cell'} );
+    cellList.cells.forEach(cell => {cell.style.backgroundColor = colorManager.eraser; cell.className = 'empty-cell'} );
 }
 
 
 function resizeGrid(event) {
     const text = 'Resizing the grid will delete your painting,\nare you sure you want to proceed?';
-    if (confirm(text)) {
+    const hasStartedDrawing = cellList.cells.some(cell => !cell.className);
+
+    if ((hasStartedDrawing && confirm(text)) || !hasStartedDrawing) {
         gridSize = event.target.value;
         document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
         grid.replaceChildren();
