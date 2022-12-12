@@ -32,6 +32,8 @@ const modeBtn = {
     color: document.getElementById('color'),
     rainbow: document.getElementById('rainbow'),
     grayscale: document.getElementById('grayscale'),
+    lighten: document.getElementById('lighten'),
+    darken: document.getElementById('darken'),
     eraser: document.getElementById('eraser'),
     fill: document.getElementById('fill')
 }
@@ -47,6 +49,8 @@ const colorManager = {
     color: DEFAULT_BRUSH_COLOR,
     rainbow: '',
     grayscale: '',
+    lighten: 'antiquewhite',
+    darken: 'indianred',
     eraser: DEFAULT_BACKGROUND_COLOR,
     fill: '',
 
@@ -155,7 +159,7 @@ function createGrid() {
     cellList.update();
 }
 
-
+// to get the same result as a 'mouseover' event on mobile devices:
 function getTouchedCell(event) {
     if (event.touches.length > 1) { return; };
     event.preventDefault();
@@ -172,9 +176,20 @@ function getTouchedCell(event) {
 
 function changeCellColor(cell) {
     if (currentMode === 'fill') { return; };
+    if (currentMode === 'lighten' || currentMode === 'darken') { changeBrightness(cell); return; }
     currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
     cell.style.backgroundColor = colorManager[currentMode];
     if (currentMode === 'rainbow' || currentMode === 'grayscale') { colorManager.updateColor(); }
+}
+
+
+function changeBrightness(cell) {
+    let amount = 20; // lighten
+    if (currentMode === 'darken') { amount *= -1; };
+    const colorStr = cell.style.backgroundColor;
+    const rgbArr = colorStr.substring(4, colorStr.length-1).split(', ');
+    const rgbChanged = rgbArr.map(value => parseInt(value) + amount);
+    cell.style.backgroundColor = `rgb(${rgbChanged.join()})`;
 }
 
 
