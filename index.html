@@ -6,6 +6,7 @@
     <script src="script.js" defer></script>
     <title>Etch-A-Sketch</title>
     <link rel="icon" type="image/x-icon" href="favicon.png">
+    <link rel="stylesheet" href="https://use.typekit.net/ynm7fqt.css">
     <script src="https://kit.fontawesome.com/7de588d311.js" crossorigin="anonymous"></script>
 </head>
 
@@ -17,21 +18,24 @@
 
     <div class="main">
         <div class="settings">
-            <div>
+            <div class="color-picker">
                 <input type="color" id="brush-color" name="brush-color">
                 <label for="brush-color">Brush Color</label>
             </div>
-            <div>
+            <div class="color-picker">
                 <input type="color" id="bg-color" name="bg-color">
                 <label for="bg-color">Background Color</label>
             </div>
             <button id="color" class="active"><i class="fa-solid fa-palette"></i> Color mode</button>
+            <div class="separator"></div>
             <button id="rainbow"><i class="fa-solid fa-rainbow"></i> Rainbow mode</button>
             <button id="grayscale"><i class="fa-solid fa-cloud"></i> Grayscale mode</button>
+            <div class="separator"></div>
             <button id="lighten"><i class="fa-regular fa-sun"></i> Lighten</button>
             <button id="darken"><i class="fa-solid fa-cloud-moon"></i> Darken</button>
-            <button id="eraser"><i class="fa-solid fa-eraser"></i> Eraser</button>
+            <div class="separator"></div>
             <button id="fill"><i class="fa-solid fa-fill-drip"></i> Fill</button>
+            <button id="eraser"><i class="fa-solid fa-eraser"></i> Eraser</button>
             <button id="clear-btn"><i class="fa-solid fa-delete-left"></i> Clear</button>
             <div class="slidecontainer">
                 <p>Grid size</p>

@@ -12,7 +12,7 @@ grid.addEventListener('mousedown', () => {isMousedown = true;});
 window.addEventListener('mouseup', () => {isMousedown = false;});
 
 ['mousedown', 'mouseover'].forEach(type => grid.addEventListener(type, (event) => {
-    if (event.type === 'mouseover' && !isMousedown) { return; };
+    if (event.target === grid || (event.type === 'mouseover' && !isMousedown)) { return; };
     changeCellColor(event.target);
 }));
 
