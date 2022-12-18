@@ -26,7 +26,7 @@
                 <input type="color" id="bg-color" name="bg-color">
                 <label for="bg-color">Background Color</label>
             </div>
-            <button id="color" class="active"><i class="fa-solid fa-palette"></i> Color mode</button>
+            <button id="color" class="active-mode"><i class="fa-solid fa-palette"></i> Color mode</button>
             <div class="separator"></div>
             <button id="rainbow"><i class="fa-solid fa-rainbow"></i> Rainbow mode</button>
             <button id="grayscale"><i class="fa-solid fa-cloud"></i> Grayscale mode</button>
@@ -37,6 +37,9 @@
             <button id="fill"><i class="fa-solid fa-fill-drip"></i> Fill</button>
             <button id="eraser"><i class="fa-solid fa-eraser"></i> Eraser</button>
             <button id="clear-btn"><i class="fa-solid fa-delete-left"></i> Clear</button>
+            <div class="separator"></div>
+            <button id="undo" class="disabled"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+            <button id="redo" class="disabled"><i class="fa-solid fa-arrow-rotate-right"></i> Redo</button>
             <div class="slidecontainer">
                 <p>Grid size</p>
                 <input type="range" min="1" max="64" value="16" id="slider">
