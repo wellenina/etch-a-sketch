@@ -9,23 +9,67 @@ let currentMode = DEFAULT_MODE;
 const grid = document.getElementById('grid');
 let isDrawing = false;
 
+// undo & redo
+const undoBtn = document.getElementById('undo');
+const redoBtn = document.getElementById('redo');
 
-//////// constructors /////////
+let history = [];
+let historyCounter = 0;
 
-function OneColorAction(futureColor) {
+function initiateAction() {
+  if (historyCounter === 0) {
+    undoBtn.classList.toggle('disabled');
+  };
+  if (historyCounter < history.length) {
+    history.splice(historyCounter);
+    redoBtn.classList.toggle('disabled');
+  };
+}
+
+undoBtn.addEventListener('click', () => {
+    if (historyCounter === history.length) {
+       redoBtn.classList.toggle('disabled');
+    };
+    history[--historyCounter].undo();
+    if (historyCounter < 1) {
+      undoBtn.classList.toggle('disabled');
+    };
+});
+
+redoBtn.addEventListener('click', () => {
+    history[historyCounter++].redo();
+    if (undoBtn.className === 'disabled') { undoBtn.classList.toggle('disabled'); };
+    if (historyCounter === history.length) {
+      redoBtn.classList.toggle('disabled');
+    };
+});
+
+function resetHistory() {
+  history = [];
+  historyCounter = 0;
+  undoBtn.className = 'disabled';
+  redoBtn.className = 'disabled';
+}
+
+// constructors for action objects
+function OneColorAction(futureColor, mode) { //////////////////////
   this.cells = [];
   this.pastColors = [];
   this.futureColor = futureColor;
+  this.pastClassNames = []; //////////////////////
+  this.mode = mode; //////////////////////
 
   this.undo = function() {
     for (let i = this.cells.length-1; i >= 0; i--) {
       this.cells[i].style.backgroundColor = this.pastColors[i];
+      this.cells[i].className = this.pastClassNames[i]; //////////////////////
     }
   };
 
   this.redo = function() {
     this.cells.forEach(cell => {
       cell.style.backgroundColor = this.futureColor;
+      this.mode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell'); //////////////////////
     });
   };
 };
@@ -34,40 +78,58 @@ function MultiColorAction() {
   this.cells = [];
   this.pastColors = [];
   this.futureColors = [];
+  this.pastClassNames = []; //////////////////////
 
   this.undo = function() {
     for (let i = this.cells.length-1; i >= 0; i--) {
       this.cells[i].style.backgroundColor = this.pastColors[i];
+      this.cells[i].className = this.pastClassNames[i]; //////////////////////
     }
   };
 
   this.redo = function() {
     this.cells.forEach((cell, index) => {
       cell.style.backgroundColor = this.futureColors[index];
+      cell.removeAttribute('class', 'empty-cell'); //////////////////////
     });
   };
 };
 
-function FillAction(pastColor, futureColor) {
+function FillAction(pastColor, futureColor, pastClassName) {
   this.cells = []; // l'elenco delle celle modificate
   this.pastColor = pastColor;
   this.futureColor = futureColor;
+  this.pastClassName = pastClassName;
 
   this.undo = function() {
     this.cells.forEach(cell => {
       cell.style.backgroundColor = this.pastColor;
+      cell.className = this.pastClassName; //////////////////////
     });
   };
 
   this.redo = function() {
     this.cells.forEach(cell => {
       cell.style.backgroundColor = this.futureColor;
+      cell.removeAttribute('class', 'empty-cell'); //////////////////////
     });
   };
 };
 
-const oneColorMode = {
+function BgColorAction(pastColor, futureColor) {
+  this.pastColor = pastColor;
+  this.futureColor = futureColor;
 
+  this.undo = function() {
+    document.querySelectorAll('.empty-cell').forEach(cell => cell.style.backgroundColor = this.pastColor);
+  };
+
+  this.redo = function() {
+    document.querySelectorAll('.empty-cell').forEach(cell => cell.style.backgroundColor = this.futureColor);
+  }
+}
+
+const oneColorMode = {
   action: {},
 
   color: DEFAULT_BRUSH_COLOR,
@@ -77,14 +139,16 @@ const oneColorMode = {
 
   newAction(cell) {
     this.newColor = this[currentMode]; 
-    this.action = new OneColorAction(this.newColor);
-    this.storeChanges(cell);
+    this.action = new OneColorAction(this.newColor, currentMode);
+    this.applyAndStoreChanges(cell);
   },
 
-  storeChanges(cell) {
+  applyAndStoreChanges(cell) {
     this.action.cells.push(cell);
     this.action.pastColors.push(cell.style.backgroundColor);
+    this.action.pastClassNames.push(cell.className); //////////////////////
     cell.style.backgroundColor = this.newColor;
+    currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell'); //////////////////////
 },
 
   endAction() {
@@ -92,8 +156,7 @@ const oneColorMode = {
   }
 };
 
-const multiColorMode = { ////// rainbow/grey, light/darken
-
+const multiColorMode = {
   rainbowColors: ['#F1CEF4', '#E4CFFF', '#C1CCFF', '#B9E3FF', '#A6FFD3', '#BCFFA4', '#F8FF97', '#FFE5A8', '#E8CACA'],
   grayscaleColors: ['#e6e6e6', '#bfbfbf', '#999999', '#737373', '#4d4d4d', '#262626', '#000000', '#262626', '#4d4d4d', '#737373', '#999999', '#bfbfbf'],
   counter: 1,
@@ -126,12 +189,13 @@ const multiColorMode = { ////// rainbow/grey, light/darken
 
   newAction(cell) {
     this.action = new MultiColorAction();
-    this.storeChanges(cell);
+    this.applyAndStoreChanges(cell);
   },
 
-  storeChanges(cell) {
+  applyAndStoreChanges(cell) {
     this.action.cells.push(cell);
     this.action.pastColors.push(cell.style.backgroundColor);
+    this.action.pastClassNames.push(cell.className); //////////////////////
 
   let newColor = '';
 
@@ -144,6 +208,7 @@ const multiColorMode = { ////// rainbow/grey, light/darken
 
   this.action.futureColors.push(newColor);
   cell.style.backgroundColor = newColor;
+  cell.removeAttribute('class', 'empty-cell'); //////////////////////
 },
 
   endAction() {
@@ -151,6 +216,7 @@ const multiColorMode = { ////// rainbow/grey, light/darken
   }
 }
 
+// 2 dimensional representation of the grid
 const cellList = {
   cells: [],
   cellsInRows: [],
@@ -164,68 +230,65 @@ const cellList = {
   }
 }
 
-
+// bucket tool
 const bucket = {
+  currentColor: '',
+  newColor: '',
+  classname: '',
 
-currentColor: '',
-newColor: '',
+  action: {},
 
-action: {},
+  fill(target) {
+    this.currentColor = target.style.backgroundColor;
+    this.newColor = oneColorMode.color;
+    this.classname = target.className;
 
-fill(target) {
-  this.currentColor = target.style.backgroundColor;
-  this.newColor = oneColorMode.color;
+    this.action = new FillAction(this.currentColor, this.newColor, this.classname);
+    this.action.cells.push(target);
 
-  this.action = new FillAction(this.currentColor, this.newColor);
-  this.action.cells.push(target);
+    target.style.backgroundColor = this.newColor;
+    target.removeAttribute('class', 'empty-cell');
+    this.fillNearbyCells(target);
+  },
 
-  target.style.backgroundColor = this.newColor;
-  target.removeAttribute('class', 'empty-cell');
-  this.fillNearbyCells(target);
-},
+  getNearbyCells(cells) {
+    let totalNearbyCells = [];
+    
+    for (const cell of cells) {
+        const index = cellList.cells.indexOf(cell);
+        const yIndex = Math.floor(index/gridSize);
+        const xIndex = index%gridSize;
+        const rowAbove = cellList.cellsInRows[yIndex-1];
+        const row = cellList.cellsInRows[yIndex];
+        const rowBelow = cellList.cellsInRows[yIndex+1];
+    
+        const nearbyCells = [];
+        if (rowAbove != undefined) { nearbyCells.push(rowAbove[xIndex]); };
+        nearbyCells.push(row[xIndex-1], row[xIndex +1]);
+        if (rowBelow != undefined) { nearbyCells.push(rowBelow[xIndex]); };
+    
+        totalNearbyCells = totalNearbyCells.concat(nearbyCells.filter(cell => cell != undefined && !totalNearbyCells.includes(cell)));
+    };
+    
+    return totalNearbyCells;
+  },
 
-getNearbyCells(cells) {
-  let totalNearbyCells = [];
-  
-  for (const cell of cells) {
-      const index = cellList.cells.indexOf(cell);
-      const yIndex = Math.floor(index/gridSize);
-      const xIndex = index%gridSize;
-      const rowAbove = cellList.cellsInRows[yIndex-1];
-      const row = cellList.cellsInRows[yIndex];
-      const rowBelow = cellList.cellsInRows[yIndex+1];
-  
-      const nearbyCells = [];
-      if (rowAbove != undefined) { nearbyCells.push(rowAbove[xIndex]); };
-      nearbyCells.push(row[xIndex-1], row[xIndex +1]);
-      if (rowBelow != undefined) { nearbyCells.push(rowBelow[xIndex]); };
-  
-      totalNearbyCells = totalNearbyCells.concat(nearbyCells.filter(cell => cell != undefined && !totalNearbyCells.includes(cell)));
-  };
-  
-  return totalNearbyCells;
-},
+  fillNearbyCells(...target) {
+    const toBeFilled = this.getNearbyCells(target).filter(cell => cell.style.backgroundColor === this.currentColor);
+    
+    if (!toBeFilled.length) { // if there are no more cells to be filled
+      history.push(this.action);
+      historyCounter++;
+      return;
+    }
 
-fillNearbyCells(...target) {
-  //const neighborhood = this.getNearbyCells(target);
-  //const toBeFilled = neighborhood.filter(cell => cell.style.backgroundColor === this.currentColor);
-
-  const toBeFilled = this.getNearbyCells(target).filter(cell => cell.style.backgroundColor === this.currentColor);
-  
-  if (!toBeFilled.length) { // se è vuoto, cioè non ci sono altre celle da riempire
-    history.push(this.action);
-    historyCounter++;
-    return;
+    toBeFilled.forEach(cell => {
+      this.action.cells.push(cell);
+      cell.style.backgroundColor = this.newColor;
+      cell.removeAttribute('class', 'empty-cell');
+    });
+    this.fillNearbyCells(...toBeFilled);
   }
-
-  // se invece ci sono altre celle da riempire:
-  toBeFilled.forEach(cell => {
-    this.action.cells.push(cell);
-    cell.style.backgroundColor = this.newColor;
-    cell.removeAttribute('class', 'empty-cell');
-  });
-  this.fillNearbyCells(...toBeFilled);
-}
 }
 
 grid.addEventListener('click', (event) => {
@@ -233,8 +296,10 @@ grid.addEventListener('click', (event) => {
   if (currentMode === 'fill') { bucket.fill(event.target); }
 });
 
+
+// mouse events for 'drawing' modes
 grid.addEventListener('mousedown', (event) => {
-    if (event.target === grid) { console.log('mousedown on the grid!!'); return; }; ////////// TEST!!
+    if (event.target === grid) { return; };
     initiateAction();
     if (currentMode === 'fill') { return; };
     isDrawing = true;
@@ -249,9 +314,9 @@ grid.addEventListener('mouseover', (event) => {
     if (event.target === grid) { return; };
     if (!isDrawing) { return; };
     if (currentMode === 'color' || currentMode === 'eraser') {
-      oneColorMode.storeChanges(event.target);
+      oneColorMode.applyAndStoreChanges(event.target);
     } else {
-      multiColorMode.storeChanges(event.target);
+      multiColorMode.applyAndStoreChanges(event.target);
     }
 });
 
@@ -266,11 +331,27 @@ window.addEventListener('mouseup', () => {
   historyCounter++;
 });
 
-////////// DA TESTARE:
+
+////////// per mobile, DA TESTARE: ////////////////
 grid.addEventListener('touchstart', initiateAction);
 grid.addEventListener('touchstart', () => {console.log('the grid has been touch-started!!');}) ////////// TEST!!
 
 grid.addEventListener('touchmove', getTouchedCell);
+
+// to get the same result as a 'mouseover' event on mobile devices:
+function getTouchedCell(event) {
+  if (event.touches.length > 1) { return; };
+  event.preventDefault();
+
+  const gridX = grid.getBoundingClientRect().x;
+  const gridY = grid.getBoundingClientRect().y;
+  const cellSize= grid.getBoundingClientRect().width / gridSize;
+  
+  const horizontalIndex = Math.floor((event.touches[0].clientX - gridX) / cellSize);
+  const verticalIndex = Math.floor((event.touches[0].clientY - gridY) / cellSize);
+  changeCellColor(cellList.cellsInRows[verticalIndex][horizontalIndex]);
+}
+
 
 // color pickers
 const brushColorPicker = document.getElementById('brush-color');
@@ -279,6 +360,25 @@ brushColorPicker.value = DEFAULT_BRUSH_COLOR;
 bgColorPicker.value = DEFAULT_BACKGROUND_COLOR;
 brushColorPicker.addEventListener('change', selectBrushColor);
 bgColorPicker.addEventListener('change', selectBgColor);
+
+function selectBrushColor(event) {
+  const selectedColor = event.target.value;
+  oneColorMode.color = selectedColor;
+  if (currentMode === 'color' || currentMode === 'fill') { setHoverCellColor(selectedColor); };
+}
+
+function selectBgColor(event) {
+  initiateAction();
+  const currentBgColor = oneColorMode.eraser;
+  const newBgColor = event.target.value;
+  const action = new BgColorAction(currentBgColor, newBgColor);
+  history.push(action);
+  historyCounter++;
+  
+  oneColorMode.eraser =  newBgColor;
+  if (currentMode === 'eraser') { setHoverCellColor(newBgColor); };
+  document.querySelectorAll('.empty-cell').forEach(cell => cell.style.backgroundColor = newBgColor);
+}
 
 // mode buttons
 const modeBtn = {
@@ -294,11 +394,42 @@ for (const key in modeBtn) {
     modeBtn[key].addEventListener('click', changeMode);
 }
 
+function changeMode() {
+  let newMode = this.id;
+  if (currentMode === newMode) { return; };
+
+  modeBtn[currentMode].classList.toggle('active-mode');
+  modeBtn[newMode].classList.toggle('active-mode');
+  currentMode = newMode;
+  multiColorMode.resetColors();
+  //setHoverCellColor(colorManager[currentMode]); DA AGGIUSTARE ///////////////
+}
+
+
+function hasStartedDrawing() {
+  return cellList.cells.some(cell => !cell.className);
+}
 
 document.getElementById('clear-btn').addEventListener('click', clear);
+function clear() {
+    const text = 'Your painting will be permanently deleted,\nare you sure you want to proceed?';
+    if (hasStartedDrawing() && confirm(text)) {
+        cellList.cells.forEach(cell => {cell.style.backgroundColor = oneColorMode.eraser; cell.className = 'empty-cell'} );
+        resetHistory();
+    }
+}
 
 document.getElementById('slider').addEventListener('change', resizeGrid);
-
+function resizeGrid(event) {
+  const text = 'Resizing the grid will permanently delete your painting,\nare you sure you want to proceed?';
+  if ((hasStartedDrawing() && confirm(text)) || !hasStartedDrawing()) {
+      gridSize = event.target.value;
+      document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
+      grid.replaceChildren();
+      createGrid();
+      resetHistory();
+  }
+}
 
 
 function createGrid() {
@@ -313,128 +444,10 @@ function createGrid() {
     cellList.update();
 }
 
-// to get the same result as a 'mouseover' event on mobile devices:
-function getTouchedCell(event) {
-    if (event.touches.length > 1) { return; };
-    event.preventDefault();
-
-    const gridX = grid.getBoundingClientRect().x;
-    const gridY = grid.getBoundingClientRect().y;
-    const cellSize= grid.getBoundingClientRect().width / gridSize;
-    
-    const horizontalIndex = Math.floor((event.touches[0].clientX - gridX) / cellSize);
-    const verticalIndex = Math.floor((event.touches[0].clientY - gridY) / cellSize);
-    changeCellColor(cellList.cellsInRows[verticalIndex][horizontalIndex]);
-}
-
-
 function setHoverCellColor(newColor) {
     const r = document.querySelector(':root');
     r.style.setProperty('--hover-cell-color', newColor);
 }
 
 
-function selectBrushColor(event) {
-    const selectedColor = event.target.value;
-    oneColorMode.color = selectedColor;
-    if (currentMode === 'color' || currentMode === 'fill') { setHoverCellColor(selectedColor); };
-}
-
-function selectBgColor(event) {
-    newBgColor = event.target.value;
-    oneColorMode.eraser =  newBgColor;
-    if (currentMode === 'eraser') { setHoverCellColor(newBgColor); };
-    document.querySelectorAll('.empty-cell').forEach(cell => cell.style.backgroundColor = newBgColor);
-}
-
-
-function changeMode() {
-    let newMode = this.id;
-    if (currentMode === newMode) { return; };
-
-    modeBtn[currentMode].classList.toggle('active-mode');
-    modeBtn[newMode].classList.toggle('active-mode');
-    currentMode = newMode;
-    multiColorMode.resetColors();
-    //setHoverCellColor(colorManager[currentMode]); DA AGGIUSTARE
-}
-
-
-function hasStartedDrawing() {
-    return cellList.cells.some(cell => !cell.className);
-}
-
-
-function clear() {
-    const text = 'Your painting will be permanently deleted,\nare you sure you want to proceed?';
-    if (hasStartedDrawing() && confirm(text)) {
-        cellList.cells.forEach(cell => {cell.style.backgroundColor = oneColorMode.eraser; cell.className = 'empty-cell'} );
-    }
-}
-
-
-function resizeGrid(event) {
-    const text = 'Resizing the grid will permanently delete your painting,\nare you sure you want to proceed?';
-    if ((hasStartedDrawing() && confirm(text)) || !hasStartedDrawing()) {
-        gridSize = event.target.value;
-        document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
-        grid.replaceChildren();
-        createGrid();
-    }
-}
-
-
 createGrid();
-
-
-
-//////////// undo & redo //////////////
-
-// bottoni in partenza entrambi disabilitati:
-const undoBtn = document.getElementById('undo');
-const redoBtn = document.getElementById('redo');
-
-const history = [];
-let historyCounter = 0;
-
-//// al moousedown SULLA GRIGLIA per tutti:
-function initiateAction() {
-  if (historyCounter === 0) { // se partiamo da una situazione in cui non c'erano azioni da annullare
-    undoBtn.classList.toggle('disabled'); // ABILITA UNDO
-  };
-  if (historyCounter < history.length) { // se ci sono posizioni future --> le cancella
-    history.splice(historyCounter); // verificare gli indici!!
-    // splice cancella dall'indice compreso
-    redoBtn.classList.toggle('disabled');
-  };
-}
-
-///////// verificare gli indici del counter ///////////
-undoBtn.addEventListener('click', () => { // click UNDO
-    if (historyCounter === history.length) { // è il 1° undo? cioè NON ci sono posizioni future?
-       redoBtn.classList.toggle('disabled'); // allora abilita REDO
-    };
-    history[--historyCounter].undo(); // chiamo il metodo dell'oggetto che rappresenta l'ultima azione effettuata
-    if (historyCounter < 1) { // se non ci sono più cambiamenti da annullare = il counter decrementato è 0
-      undoBtn.classList.toggle('disabled'); // disabilita UNDO
-    };
-});
-  
-redoBtn.addEventListener('click', () => {
-    history[historyCounter++].redo();
-    if (undoBtn.className === 'disabled') { undoBtn.classList.toggle('disabled'); };
-    if (historyCounter === history.length) { // NON ci sono altre posizioni future?
-      redoBtn.classList.toggle('disabled'); // allora disabilito REDO
-    };
-});
-
-
-
-
-
-
-
-
-
-
-
