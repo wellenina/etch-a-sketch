@@ -129,6 +129,8 @@ function BgColorAction(pastColor, futureColor) {
   }
 }
 
+
+
 const oneColorMode = {
   action: {},
 
@@ -406,6 +408,10 @@ function changeMode() {
 }
 
 
+
+
+
+
 function hasStartedDrawing() {
   return cellList.cells.some(cell => !cell.className);
 }
@@ -451,3 +457,45 @@ function setHoverCellColor(newColor) {
 
 
 createGrid();
+
+
+
+
+
+
+
+const flipHorizontalBtn = document.getElementById('flip-horizontal');
+const flipVerticalBtn = document.getElementById('flip-vertical');
+
+flipHorizontalBtn.addEventListener('click', () => { flip('horizontal');} )
+flipVerticalBtn.addEventListener('click', () => { flip('vertical');} )
+
+function FlipAction(direction) {
+  this.direction = direction;
+
+  this.undo = function() {
+    flipGrid(this.direction);
+  };
+  this.redo = function() {
+    flipGrid(this.direction);
+  };
+}
+
+function flip(direction) {
+  initiateAction();
+  const action = new FlipAction(direction);
+  flipGrid(direction);
+  history.push(action);
+  historyCounter++;
+}
+
+function flipGrid(direction) {
+  if (direction === 'horizontal') {
+    cellList.cellsInRows.reverse();
+ } else {
+   cellList.cellsInRows.forEach(row => row.reverse());
+ };
+ 
+ let reversed = cellList.cellsInRows.flat();
+ grid.replaceChildren(...reversed);
+}
