@@ -461,14 +461,57 @@ createGrid();
 
 
 
+// rotate left / right
+document.getElementById('rotate-left').addEventListener('click', () => { rotate(-90);} );
+document.getElementById('rotate-right').addEventListener('click', () => { rotate(90);} );
+
+function RotateAction(direction) {
+  this.direction = direction;
+
+  this.undo = function() {
+    rotateGrid(this.direction * -1);
+  };
+  this.redo = function() {
+    rotateGrid(this.direction);
+  };
+}
+
+function rotate(direction) {
+  initiateAction();
+  const action = new RotateAction(direction);
+  rotateGrid(direction);
+  history.push(action);
+  historyCounter++;
+}
+
+function rotateGrid(direction) {
+  let rotatedRows = [];
+
+  if (direction < 0) {
+    for (let i = 0; i < gridSize; i++) {
+      rotatedRows.unshift([]);
+      for (let j = 0; j < gridSize; j++) {
+        rotatedRows[0].push(cellList.cellsInRows[j][i]);
+      };
+    };
+   } else {
+
+    for (let i = 0; i < gridSize; i++) {
+      rotatedRows.push([]);
+      for (let j = gridSize-1; j >= 0; j--) {
+        rotatedRows[i].push(cellList.cellsInRows[j][i]);
+      };
+    };
+   };
+  cellList.cellsInRows = rotatedRows;
+  let rotated = rotatedRows.flat();
+  grid.replaceChildren(...rotated);
+}
 
 
-
-const flipHorizontalBtn = document.getElementById('flip-horizontal');
-const flipVerticalBtn = document.getElementById('flip-vertical');
-
-flipHorizontalBtn.addEventListener('click', () => { flip('horizontal');} )
-flipVerticalBtn.addEventListener('click', () => { flip('vertical');} )
+// flip horizontally / vertically
+document.getElementById('flip-horizontal').addEventListener('click', () => { flip('horizontal');} );
+document.getElementById('flip-vertical').addEventListener('click', () => { flip('vertical');} );
 
 function FlipAction(direction) {
   this.direction = direction;
@@ -495,7 +538,7 @@ function flipGrid(direction) {
  } else {
    cellList.cellsInRows.forEach(row => row.reverse());
  };
- 
+
  let reversed = cellList.cellsInRows.flat();
  grid.replaceChildren(...reversed);
 }
