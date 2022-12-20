@@ -460,7 +460,6 @@ createGrid();
 
 
 
-
 // rotate left / right
 document.getElementById('rotate-left').addEventListener('click', () => { rotate(-90);} );
 document.getElementById('rotate-right').addEventListener('click', () => { rotate(90);} );
@@ -494,15 +493,14 @@ function rotateGrid(direction) {
         rotatedRows[0].push(cellList.cellsInRows[j][i]);
       };
     };
-   } else {
-
+  } else {
     for (let i = 0; i < gridSize; i++) {
       rotatedRows.push([]);
       for (let j = gridSize-1; j >= 0; j--) {
         rotatedRows[i].push(cellList.cellsInRows[j][i]);
       };
     };
-   };
+  };
   cellList.cellsInRows = rotatedRows;
   let rotated = rotatedRows.flat();
   grid.replaceChildren(...rotated);
@@ -541,4 +539,35 @@ function flipGrid(direction) {
 
  let reversed = cellList.cellsInRows.flat();
  grid.replaceChildren(...reversed);
+}
+
+
+// invert colors
+document.getElementById('invert-colors').addEventListener('click', invertColors);
+
+function InvertColorsAction() {
+  this.undo = function() {
+    invertCellsColors();
+  };
+  this.redo = function() {
+    invertCellsColors();
+  };
+}
+
+function invertColors() {
+  initiateAction();
+  const action = new InvertColorsAction();
+  invertCellsColors();
+  history.push(action);
+  historyCounter++;
+}
+
+function invertCellsColors() {
+  cellList.cells.map(cell => {
+    if (cell.className === 'empty-cell') { return; };
+    const colorStr = cell.style.backgroundColor;
+    const rgbArr = colorStr.substring(4, colorStr.length-1).split(', ');
+    const rgbInverted = rgbArr.map(value => 255 - parseInt(value));
+    cell.style.backgroundColor = `rgb(${rgbInverted.join()})`;
+  })
 }
