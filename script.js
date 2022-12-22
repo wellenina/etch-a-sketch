@@ -301,25 +301,36 @@ grid.addEventListener('click', (event) => {
 
 // mouse events for 'drawing' modes
 grid.addEventListener('mousedown', (event) => {
-    if (event.target === grid) { return; };
-    initiateAction();
-    if (currentMode === 'fill') { return; };
-    isDrawing = true;
-    if (currentMode === 'color' || currentMode === 'eraser') {
-      oneColorMode.newAction(event.target);
-    } else {
-      multiColorMode.newAction(event.target);
-    }
+  if (event.target === grid) { return; };
+  initiateAction();
+  if (currentMode === 'fill') { return; };
+  isDrawing = true;
+  if (currentMode === 'color' || currentMode === 'eraser') {
+    oneColorMode.newAction(event.target);
+  } else {
+    multiColorMode.newAction(event.target);
+  }
 });
 
 grid.addEventListener('mouseover', (event) => {
-    if (event.target === grid) { return; };
-    if (!isDrawing) { return; };
-    if (currentMode === 'color' || currentMode === 'eraser') {
-      oneColorMode.applyAndStoreChanges(event.target);
-    } else {
-      multiColorMode.applyAndStoreChanges(event.target);
-    }
+  if (event.target === grid) { return; };
+  const cell = event.target;
+
+  if (currentMode === 'lighten') {
+    cell.setAttribute('id', 'light');
+    cell.addEventListener('mouseleave', (event) => { event.target.removeAttribute('id'); })
+  };
+  if (currentMode === 'darken') {
+    cell.setAttribute('id', 'dark');
+    cell.addEventListener('mouseleave', (event) => { event.target.removeAttribute('id'); })
+  };
+
+  if (!isDrawing) { return; };
+  if (currentMode === 'color' || currentMode === 'eraser') {
+    oneColorMode.applyAndStoreChanges(cell);
+  } else {
+    multiColorMode.applyAndStoreChanges(cell);
+  }
 });
 
 window.addEventListener('mouseup', () => {
@@ -332,6 +343,9 @@ window.addEventListener('mouseup', () => {
     }
   historyCounter++;
 });
+
+
+
 
 
 ////////// per mobile, DA TESTARE: ////////////////
@@ -403,13 +417,21 @@ function changeMode() {
   modeBtn[currentMode].classList.toggle('active-mode');
   modeBtn[newMode].classList.toggle('active-mode');
   currentMode = newMode;
-  multiColorMode.resetColors();
-  //setHoverCellColor(colorManager[currentMode]); DA AGGIUSTARE ///////////////
+
+  switch (newMode) {
+    case 'color':
+    case 'fill':
+      setHoverCellColor(oneColorMode.color);
+      break;
+    case 'eraser':
+      setHoverCellColor(oneColorMode.eraser);
+      break;
+    case 'rainbow':
+    case 'grayscale':
+      multiColorMode.resetColors();
+      setHoverCellColor(multiColorMode[newMode]);
+  }
 }
-
-
-
-
 
 
 function hasStartedDrawing() {
@@ -429,7 +451,7 @@ document.getElementById('slider').addEventListener('change', resizeGrid);
 function resizeGrid(event) {
   const text = 'Resizing the grid will permanently delete your painting,\nare you sure you want to proceed?';
   if ((hasStartedDrawing() && confirm(text)) || !hasStartedDrawing()) {
-      gridSize = event.target.value;
+      gridSize = parseInt(event.target.value);
       document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
       grid.replaceChildren();
       createGrid();
