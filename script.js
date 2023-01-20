@@ -271,7 +271,7 @@ const bucket = {
     
         totalNearbyCells = totalNearbyCells.concat(nearbyCells.filter(cell => cell != undefined && !totalNearbyCells.includes(cell)));
     };
-    
+
     return totalNearbyCells;
   },
 
@@ -526,6 +526,7 @@ function rotateGrid(direction) {
   cellList.cellsInRows = rotatedRows;
   let rotated = rotatedRows.flat();
   grid.replaceChildren(...rotated);
+  cellList.cells = Array.from(grid.children);
 }
 
 
@@ -561,6 +562,7 @@ function flipGrid(direction) {
 
  let reversed = cellList.cellsInRows.flat();
  grid.replaceChildren(...reversed);
+ cellList.cells = Array.from(grid.children);
 }
 
 
