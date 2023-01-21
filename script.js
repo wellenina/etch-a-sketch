@@ -595,3 +595,43 @@ function invertCellsColors() {
     cell.style.backgroundColor = `rgb(${rgbInverted.join()})`;
   })
 }
+
+// download image
+const DEFAULT_IMAGE_SIZE = 400;
+document.getElementById('download-image').addEventListener('click', createImage)
+
+function createImage() {
+  const multiplicator = Math.floor(DEFAULT_IMAGE_SIZE/gridSize);
+  const imageSize = gridSize * multiplicator;
+
+  let rgbaArr = [];
+  cellList.cellsInRows.forEach(row => {
+    let rgbaRow = [];
+    row.forEach(cell => {
+      const colorStr = cell.style.backgroundColor;
+      const rgbArr = colorStr.substring(4, colorStr.length-1).split(', ');
+      for (let i = 0; i < multiplicator; i++) {
+        rgbaRow.push(parseInt(rgbArr[0]), parseInt(rgbArr[1]), parseInt(rgbArr[2]), 255);
+      };
+    })
+    for (let i = 0; i < multiplicator; i++) {
+      rgbaArr = rgbaArr.concat(rgbaRow);
+    }
+  });
+
+  // create an offscreen canvas
+  const canvas = document.createElement("canvas");
+  canvas.width = imageSize;
+  canvas.height = imageSize;
+  const canvasContext = canvas.getContext("2d");
+
+  // create image from array of RGBA values
+  const actualImage = canvasContext.createImageData(imageSize, imageSize);
+  actualImage.data.set(rgbaArr);
+  canvasContext.putImageData(actualImage, 0, 0);
+
+  const downloadLink = document.createElement('a');
+  downloadLink.download = 'your-image.png';
+  downloadLink.href = canvas.toDataURL();
+  downloadLink.click();
+}
