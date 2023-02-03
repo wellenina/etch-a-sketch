@@ -52,24 +52,24 @@ function resetHistory() {
 }
 
 // constructors for action objects
-function OneColorAction(futureColor, mode) { //////////////////////
+function OneColorAction(futureColor, mode) {
   this.cells = [];
   this.pastColors = [];
   this.futureColor = futureColor;
-  this.pastClassNames = []; //////////////////////
-  this.mode = mode; //////////////////////
+  this.pastClassNames = [];
+  this.mode = mode;
 
   this.undo = function() {
     for (let i = this.cells.length-1; i >= 0; i--) {
       this.cells[i].style.backgroundColor = this.pastColors[i];
-      this.cells[i].className = this.pastClassNames[i]; //////////////////////
+      this.cells[i].className = this.pastClassNames[i];
     }
   };
 
   this.redo = function() {
     this.cells.forEach(cell => {
       cell.style.backgroundColor = this.futureColor;
-      this.mode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell'); //////////////////////
+      this.mode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
     });
   };
 };
@@ -78,25 +78,25 @@ function MultiColorAction() {
   this.cells = [];
   this.pastColors = [];
   this.futureColors = [];
-  this.pastClassNames = []; //////////////////////
+  this.pastClassNames = [];
 
   this.undo = function() {
     for (let i = this.cells.length-1; i >= 0; i--) {
       this.cells[i].style.backgroundColor = this.pastColors[i];
-      this.cells[i].className = this.pastClassNames[i]; //////////////////////
+      this.cells[i].className = this.pastClassNames[i];
     }
   };
 
   this.redo = function() {
     this.cells.forEach((cell, index) => {
       cell.style.backgroundColor = this.futureColors[index];
-      cell.removeAttribute('class', 'empty-cell'); //////////////////////
+      cell.removeAttribute('class', 'empty-cell');
     });
   };
 };
 
 function FillAction(pastColor, futureColor, pastClassName) {
-  this.cells = []; // l'elenco delle celle modificate
+  this.cells = [];
   this.pastColor = pastColor;
   this.futureColor = futureColor;
   this.pastClassName = pastClassName;
@@ -104,14 +104,14 @@ function FillAction(pastColor, futureColor, pastClassName) {
   this.undo = function() {
     this.cells.forEach(cell => {
       cell.style.backgroundColor = this.pastColor;
-      cell.className = this.pastClassName; //////////////////////
+      cell.className = this.pastClassName;
     });
   };
 
   this.redo = function() {
     this.cells.forEach(cell => {
       cell.style.backgroundColor = this.futureColor;
-      cell.removeAttribute('class', 'empty-cell'); //////////////////////
+      cell.removeAttribute('class', 'empty-cell');
     });
   };
 };
@@ -148,9 +148,9 @@ const oneColorMode = {
   applyAndStoreChanges(cell) {
     this.action.cells.push(cell);
     this.action.pastColors.push(cell.style.backgroundColor);
-    this.action.pastClassNames.push(cell.className); //////////////////////
+    this.action.pastClassNames.push(cell.className);
     cell.style.backgroundColor = this.newColor;
-    currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell'); //////////////////////
+    currentMode === 'eraser' ? cell.className = 'empty-cell' : cell.removeAttribute('class', 'empty-cell');
 },
 
   endAction() {
@@ -197,7 +197,7 @@ const multiColorMode = {
   applyAndStoreChanges(cell) {
     this.action.cells.push(cell);
     this.action.pastColors.push(cell.style.backgroundColor);
-    this.action.pastClassNames.push(cell.className); //////////////////////
+    this.action.pastClassNames.push(cell.className);
 
   let newColor = '';
 
@@ -210,7 +210,7 @@ const multiColorMode = {
 
   this.action.futureColors.push(newColor);
   cell.style.backgroundColor = newColor;
-  cell.removeAttribute('class', 'empty-cell'); //////////////////////
+  cell.removeAttribute('class', 'empty-cell');
 },
 
   endAction() {
@@ -271,13 +271,11 @@ const bucket = {
     
         totalNearbyCells = totalNearbyCells.concat(nearbyCells.filter(cell => cell != undefined && !totalNearbyCells.includes(cell)));
     };
-
     return totalNearbyCells;
   },
 
   fillNearbyCells(...target) {
     const toBeFilled = this.getNearbyCells(target).filter(cell => cell.style.backgroundColor === this.currentColor);
-    
     if (!toBeFilled.length) { // if there are no more cells to be filled
       history.push(this.action);
       historyCounter++;
@@ -302,20 +300,30 @@ grid.addEventListener('click', (event) => {
 // mouse events for 'drawing' modes
 grid.addEventListener('mousedown', (event) => {
   if (event.target === grid) { return; };
-  initiateAction();
-  if (currentMode === 'fill') { return; };
-  isDrawing = true;
-  if (currentMode === 'color' || currentMode === 'eraser') {
-    oneColorMode.newAction(event.target);
-  } else {
-    multiColorMode.newAction(event.target);
-  }
+  mouseDownFunc(event.target);
 });
 
 grid.addEventListener('mouseover', (event) => {
   if (event.target === grid) { return; };
-  const cell = event.target;
+  setHoverBrightness(event.target);
+  mouseOverFunc(event.target);
+});
 
+window.addEventListener('mouseup', mouseUpFunc);
+
+
+function mouseDownFunc(cell) {
+  initiateAction();
+  if (currentMode === 'fill') { return; };
+  isDrawing = true;
+  if (currentMode === 'color' || currentMode === 'eraser') {
+    oneColorMode.newAction(cell);
+  } else {
+    multiColorMode.newAction(cell);
+  }
+}
+
+function setHoverBrightness(cell) {
   if (currentMode === 'lighten') {
     cell.setAttribute('id', 'light');
     cell.addEventListener('mouseleave', (event) => { event.target.removeAttribute('id'); })
@@ -324,16 +332,19 @@ grid.addEventListener('mouseover', (event) => {
     cell.setAttribute('id', 'dark');
     cell.addEventListener('mouseleave', (event) => { event.target.removeAttribute('id'); })
   };
+}
 
+function mouseOverFunc(cell) {
   if (!isDrawing) { return; };
+  if (cell == undefined) { return; };
   if (currentMode === 'color' || currentMode === 'eraser') {
     oneColorMode.applyAndStoreChanges(cell);
   } else {
     multiColorMode.applyAndStoreChanges(cell);
   }
-});
+}
 
-window.addEventListener('mouseup', () => {
+function mouseUpFunc() {
   if (!isDrawing) { return; };
   isDrawing = false;
     if (currentMode === 'color' || currentMode === 'eraser') {
@@ -342,32 +353,37 @@ window.addEventListener('mouseup', () => {
       multiColorMode.endAction();
     }
   historyCounter++;
+}
+
+
+////////// touch events for mobile devices, DA TESTARE ////////////////
+grid.addEventListener('touchstart', (event) => {
+  if (event.touches.length > 1) { return; };
+  mouseDownFunc(getTouchedCell(event));
+  if (currentMode === 'fill') { bucket.fill(getTouchedCell(event)); }
 });
 
-
-
-
-
-////////// per mobile, DA TESTARE: ////////////////
-grid.addEventListener('touchstart', initiateAction);
-grid.addEventListener('touchstart', () => {console.log('the grid has been touch-started!!');}) ////////// TEST!!
-
-grid.addEventListener('touchmove', getTouchedCell);
-
-// to get the same result as a 'mouseover' event on mobile devices:
-function getTouchedCell(event) {
+grid.addEventListener('touchmove', (event) => {
   if (event.touches.length > 1) { return; };
   event.preventDefault();
+  mouseOverFunc(getTouchedCell(event));
+});
 
+window.addEventListener('touchend', mouseUpFunc);
+
+function getTouchedCell(event) {
   const gridX = grid.getBoundingClientRect().x;
   const gridY = grid.getBoundingClientRect().y;
   const cellSize= grid.getBoundingClientRect().width / gridSize;
   
   const horizontalIndex = Math.floor((event.touches[0].clientX - gridX) / cellSize);
   const verticalIndex = Math.floor((event.touches[0].clientY - gridY) / cellSize);
-  changeCellColor(cellList.cellsInRows[verticalIndex][horizontalIndex]);
-}
 
+  if (horizontalIndex < 0 || horizontalIndex >= gridSize || verticalIndex < 0 || verticalIndex >= gridSize) {
+    return;
+  }
+  return cellList.cellsInRows[verticalIndex][horizontalIndex];
+}
 
 // color pickers
 const brushColorPicker = document.getElementById('brush-color');
@@ -631,7 +647,7 @@ function createImage() {
   canvasContext.putImageData(actualImage, 0, 0);
 
   const downloadLink = document.createElement('a');
-  downloadLink.download = 'your-image.png';
+  downloadLink.download = 'your-pixelated-masterpiece.png';
   downloadLink.href = canvas.toDataURL();
   downloadLink.click();
 }
