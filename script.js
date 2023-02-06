@@ -542,9 +542,9 @@ function rotateGrid(direction) {
 }
 
 
-// flip horizontally / vertically
-document.getElementById('flip-horizontal').addEventListener('click', () => { flip('horizontal');} );
+// flip vertical / horizontal
 document.getElementById('flip-vertical').addEventListener('click', () => { flip('vertical');} );
+document.getElementById('flip-horizontal').addEventListener('click', () => { flip('horizontal');} );
 
 function FlipAction(direction) {
   this.direction = direction;
@@ -566,7 +566,7 @@ function flip(direction) {
 }
 
 function flipGrid(direction) {
-  if (direction === 'horizontal') {
+  if (direction === 'vertical') {
     cellList.cellsInRows.reverse();
  } else {
    cellList.cellsInRows.forEach(row => row.reverse());

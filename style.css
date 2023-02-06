@@ -5,7 +5,7 @@
     --primary-light: #9BBFBC;
     --accent-color: #FF69B4;
     --accent-color-light: #D9B0CE;
-    --grid-size: min(72vh, 40vw);
+    --grid-size: min(72vh, 40vw, 640px);
     --mobile-grid-size: 76vw;
     --small-font: min(1.7vh, 0.94vw);
     --hover-cell-color: #FF69B4;
@@ -53,7 +53,7 @@ header h1 {
 .settings-bottom {
     margin: 2rem auto 0;
     width: 77%;
-    height: calc(var(--grid-size) / 9);;
+    height: calc(var(--grid-size) / 9.1);;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -215,7 +215,7 @@ footer {
 
 footer p {
     font-size: var(--small-font);
-    margin: 2rem 0 0;
+    margin: 1rem 0 0;
 }
 
 footer a {

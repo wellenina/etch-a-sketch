@@ -20,7 +20,7 @@ I kept working on it for fun and built an overly complicated version of the assi
 * **Bucket tool**: fill an area of adjacent pixels of the same color with the selected color
 * **Eraser**: erase the painted pixels, restoring the background color
 * **Rotate left and right**: rotate the whole canvas by 90° counterclockwise or clockwise
-* **Flip horizontally and vertically**: mirror the whole canvas across the horizontal or vertical axis
+* **Flip vertical and horizontal**: mirror the whole canvas across the horizontal or vertical axis
 * **Invert colors**: turn the painted pixels to their opposite colors (does not affect the background)
 * **Clear**: clear the whole canvas, after asking for confirmation if the user has started drawing
 
@@ -32,4 +32,4 @@ I kept working on it for fun and built an overly complicated version of the assi
 
 
 
-Icons on buttons from [Icons8](href="https://icons8.com)
+Icons on buttons from [Icons8](https://icons8.com)
