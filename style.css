@@ -252,6 +252,9 @@ footer a {
 /* mobile */
 
 @media (orientation: portrait) {
+    :root {
+        --small-font: 0.9vh;
+    }
     .main {
         flex-direction: column;
         align-items: center;
@@ -263,11 +266,16 @@ footer a {
         gap: 1rem;
     }
     .settings-columm {
-        flex-direction: row;
         width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        row-gap: 1rem;
     }
     .settings-columm > button {
-        width: 12%;
+        width: 24%;
+    }
+    .settings-columm > button:first-child {
+        width: 36%;
     }
     .separator {
         display: none;
@@ -283,5 +291,10 @@ footer a {
     .settings-bottom {
         margin: 0 auto;
         height: auto;
+        flex-wrap: wrap;
+        row-gap: 1rem;
+    }
+    .settings-bottom > * {
+        width: 40% !important;
     }
 }
