@@ -240,54 +240,59 @@ const bucket = {
 
   action: {},
 
+  cellsToFill: [],
+  queue: [],
+
   fill(target) {
-    this.currentColor = target.style.backgroundColor;
-    this.newColor = oneColorMode.color;
-    this.classname = target.className;
+// 1. all'inizio dell'azione:
+      this.currentColor = target.style.backgroundColor;
+      this.newColor = oneColorMode.color;
+      this.classname = target.className;
+      this.action = new FillAction(this.currentColor, this.newColor, this.classname);
 
-    this.action = new FillAction(this.currentColor, this.newColor, this.classname);
-    this.action.cells.push(target);
+  // identifico la prima cella cliccata con i 2 indici
+      const index = cellList.cells.indexOf(target);
+      const y = Math.floor(index/gridSize); // l'indice verticale (cioè il primo indice dell'array, in pratica la riga)
+      const x = index%gridSize; // l'indice orizzontale (cioè il secondo indice dell'array, in pratica la colonna)
 
-    target.style.backgroundColor = this.newColor;
-    target.removeAttribute('class', 'empty-cell');
-    this.fillNearbyCells(target);
-  },
+  // la aggiungo all'array delle celle da riempire:
+      this.cellsToFill.push(target);
+  // aggiungo le sue coordinate alla queue:
+      this.queue.push([y, x]);
 
-  getNearbyCells(cells) {
-    let totalNearbyCells = [];
-    
-    for (const cell of cells) {
-        const index = cellList.cells.indexOf(cell);
-        const yIndex = Math.floor(index/gridSize);
-        const xIndex = index%gridSize;
-        const rowAbove = cellList.cellsInRows[yIndex-1];
-        const row = cellList.cellsInRows[yIndex];
-        const rowBelow = cellList.cellsInRows[yIndex+1];
-    
-        const nearbyCells = [];
-        if (rowAbove != undefined) { nearbyCells.push(rowAbove[xIndex]); };
-        nearbyCells.push(row[xIndex-1], row[xIndex +1]);
-        if (rowBelow != undefined) { nearbyCells.push(rowBelow[xIndex]); };
-    
-        totalNearbyCells = totalNearbyCells.concat(nearbyCells.filter(cell => cell != undefined && !totalNearbyCells.includes(cell)));
-    };
-    return totalNearbyCells;
-  },
+// 2. cerca TUTTE le celle valide, contigue && del colore della cella target:
+      while (this.queue.length) {
+        const firstInLine = this.queue.shift();
+        this.checkNearbyCells(firstInLine[0], firstInLine[1]);
+      }
 
-  fillNearbyCells(...target) {
-    const toBeFilled = this.getNearbyCells(target).filter(cell => cell.style.backgroundColor === this.currentColor);
-    if (!toBeFilled.length) { // if there are no more cells to be filled
+// 3. per ognuna di queste celle: cambio colore, classe, ecc. poi svuoto l'array
+      this.cellsToFill.forEach(cell => this.applyChange(cell));
+      this.action.cells = [...this.cellsToFill];
+      this.cellsToFill = [];
+
+// 4. concludo l'azione
       history.push(this.action);
       historyCounter++;
-      return;
-    }
+  },
 
-    toBeFilled.forEach(cell => {
-      this.action.cells.push(cell);
+  checkNearbyCells(yIndex, xIndex) {
+    const coordinates = [yIndex-1, xIndex, yIndex, xIndex-1, yIndex, xIndex+1, yIndex+1, xIndex];
+    for (let i = 0; i < 8; i+=2) {
+      if (coordinates[i] < 0 || coordinates[i] >= gridSize || coordinates[i+1] < 0 || coordinates[i+1] >= gridSize) {
+        break;
+      }
+      if (cellList.cellsInRows[coordinates[i]][coordinates[i+1]].style.backgroundColor === this.currentColor &&
+        !this.cellsToFill.includes(cellList.cellsInRows[coordinates[i]][coordinates[i+1]])) {
+          this.cellsToFill.push(cellList.cellsInRows[coordinates[i]][coordinates[i+1]]);
+          this.queue.push([coordinates[i], coordinates[i+1]])
+      }
+    }
+  },
+
+  applyChange(cell) { // OK
       cell.style.backgroundColor = this.newColor;
       cell.removeAttribute('class', 'empty-cell');
-    });
-    this.fillNearbyCells(...toBeFilled);
   }
 }
 
@@ -359,6 +364,7 @@ function mouseUpFunc() {
 ////////// touch events for mobile devices, DA TESTARE ////////////////
 grid.addEventListener('touchstart', (event) => {
   if (event.touches.length > 1) { return; };
+  event.preventDefault();
   mouseDownFunc(getTouchedCell(event));
   if (currentMode === 'fill') { bucket.fill(getTouchedCell(event)); }
 });
