@@ -27,21 +27,21 @@ function initiateAction() {
 }
 
 undoBtn.addEventListener('click', () => {
-    if (historyCounter === history.length) {
-       redoBtn.classList.toggle('disabled');
-    };
-    history[--historyCounter].undo();
-    if (historyCounter < 1) {
-      undoBtn.classList.toggle('disabled');
-    };
+  if (historyCounter === history.length) {
+      redoBtn.classList.toggle('disabled');
+  };
+  history[--historyCounter].undo();
+  if (historyCounter < 1) {
+    undoBtn.classList.toggle('disabled');
+  };
 });
 
 redoBtn.addEventListener('click', () => {
-    history[historyCounter++].redo();
-    if (undoBtn.className === 'disabled') { undoBtn.classList.toggle('disabled'); };
-    if (historyCounter === history.length) {
-      redoBtn.classList.toggle('disabled');
-    };
+  history[historyCounter++].redo();
+  if (undoBtn.className === 'disabled') { undoBtn.classList.toggle('disabled'); };
+  if (historyCounter === history.length) {
+    redoBtn.classList.toggle('disabled');
+  };
 });
 
 function resetHistory() {
@@ -130,7 +130,6 @@ function BgColorAction(pastColor, futureColor) {
 }
 
 
-
 const oneColorMode = {
   action: {},
 
@@ -199,19 +198,19 @@ const multiColorMode = {
     this.action.pastColors.push(cell.style.backgroundColor);
     this.action.pastClassNames.push(cell.className);
 
-  let newColor = '';
+    let newColor = '';
 
-  if (currentMode === 'rainbow' || currentMode === 'grayscale') {
-    newColor = this[currentMode];
-    this.updateColor();
-  } else {
-    newColor = this.getBrightnessChange(cell.style.backgroundColor);
-  };
+    if (currentMode === 'rainbow' || currentMode === 'grayscale') {
+      newColor = this[currentMode];
+      this.updateColor();
+    } else {
+      newColor = this.getBrightnessChange(cell.style.backgroundColor);
+    };
 
-  this.action.futureColors.push(newColor);
-  cell.style.backgroundColor = newColor;
-  cell.removeAttribute('class', 'empty-cell');
-},
+    this.action.futureColors.push(newColor);
+    cell.style.backgroundColor = newColor;
+    cell.removeAttribute('class', 'empty-cell');
+  },
 
   endAction() {
     history.push(this.action);
@@ -244,36 +243,29 @@ const bucket = {
   queue: [],
 
   fill(target) {
-// 1. all'inizio dell'azione:
-      this.currentColor = target.style.backgroundColor;
-      this.newColor = oneColorMode.color;
-      this.classname = target.className;
-      this.action = new FillAction(this.currentColor, this.newColor, this.classname);
+    this.currentColor = target.style.backgroundColor;
+    this.newColor = oneColorMode.color;
+    this.classname = target.className;
+    this.action = new FillAction(this.currentColor, this.newColor, this.classname);
 
-  // identifico la prima cella cliccata con i 2 indici
-      const index = cellList.cells.indexOf(target);
-      const y = Math.floor(index/gridSize); // l'indice verticale (cioè il primo indice dell'array, in pratica la riga)
-      const x = index%gridSize; // l'indice orizzontale (cioè il secondo indice dell'array, in pratica la colonna)
+    const index = cellList.cells.indexOf(target);
+    const y = Math.floor(index/gridSize);
+    const x = index%gridSize;
 
-  // la aggiungo all'array delle celle da riempire:
-      this.cellsToFill.push(target);
-  // aggiungo le sue coordinate alla queue:
-      this.queue.push([y, x]);
+    this.cellsToFill.push(target);
+    this.queue.push([y, x]);
 
-// 2. cerca TUTTE le celle valide, contigue && del colore della cella target:
-      while (this.queue.length) {
-        const firstInLine = this.queue.shift();
-        this.checkNearbyCells(firstInLine[0], firstInLine[1]);
-      }
+    while (this.queue.length) {
+      const firstInLine = this.queue.shift();
+      this.checkNearbyCells(firstInLine[0], firstInLine[1]);
+    }
 
-// 3. per ognuna di queste celle: cambio colore, classe, ecc. poi svuoto l'array
-      this.cellsToFill.forEach(cell => this.applyChange(cell));
-      this.action.cells = [...this.cellsToFill];
-      this.cellsToFill = [];
+    this.cellsToFill.forEach(cell => this.applyChange(cell));
+    this.action.cells = [...this.cellsToFill];
+    this.cellsToFill = [];
 
-// 4. concludo l'azione
-      history.push(this.action);
-      historyCounter++;
+    history.push(this.action);
+    historyCounter++;
   },
 
   checkNearbyCells(yIndex, xIndex) {
@@ -290,9 +282,9 @@ const bucket = {
     }
   },
 
-  applyChange(cell) { // OK
-      cell.style.backgroundColor = this.newColor;
-      cell.removeAttribute('class', 'empty-cell');
+  applyChange(cell) {
+    cell.style.backgroundColor = this.newColor;
+    cell.removeAttribute('class', 'empty-cell');
   }
 }
 
@@ -361,7 +353,7 @@ function mouseUpFunc() {
 }
 
 
-////////// touch events for mobile devices, DA TESTARE ////////////////
+// touch events for mobile devices
 grid.addEventListener('touchstart', (event) => {
   if (event.touches.length > 1) { return; };
   event.preventDefault();
@@ -420,16 +412,16 @@ function selectBgColor(event) {
 
 // mode buttons
 const modeBtn = {
-    color: document.getElementById('color'),
-    rainbow: document.getElementById('rainbow'),
-    grayscale: document.getElementById('grayscale'),
-    lighten: document.getElementById('lighten'),
-    darken: document.getElementById('darken'),
-    fill: document.getElementById('fill'),
-    eraser: document.getElementById('eraser')
+  color: document.getElementById('color'),
+  rainbow: document.getElementById('rainbow'),
+  grayscale: document.getElementById('grayscale'),
+  lighten: document.getElementById('lighten'),
+  darken: document.getElementById('darken'),
+  fill: document.getElementById('fill'),
+  eraser: document.getElementById('eraser')
 }
 for (const key in modeBtn) {
-    modeBtn[key].addEventListener('click', changeMode);
+  modeBtn[key].addEventListener('click', changeMode);
 }
 
 function changeMode() {
@@ -455,53 +447,51 @@ function changeMode() {
   }
 }
 
-
 function hasStartedDrawing() {
   return cellList.cells.some(cell => !cell.className);
 }
 
 document.getElementById('clear-btn').addEventListener('click', clear);
 function clear() {
-    const text = 'Your painting will be permanently deleted,\nare you sure you want to proceed?';
-    if (hasStartedDrawing() && confirm(text)) {
-        cellList.cells.forEach(cell => {cell.style.backgroundColor = oneColorMode.eraser; cell.className = 'empty-cell'} );
-        resetHistory();
-    }
+  const text = 'Your painting will be permanently deleted,\nare you sure you want to proceed?';
+  if (hasStartedDrawing() && confirm(text)) {
+    cellList.cells.forEach(cell => {cell.style.backgroundColor = oneColorMode.eraser; cell.className = 'empty-cell'} );
+    resetHistory();
+  }
 }
 
 document.getElementById('slider').addEventListener('change', resizeGrid);
 function resizeGrid(event) {
   const text = 'Resizing the grid will permanently delete your painting,\nare you sure you want to proceed?';
   if ((hasStartedDrawing() && confirm(text)) || !hasStartedDrawing()) {
-      gridSize = parseInt(event.target.value);
-      document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
-      grid.replaceChildren();
-      createGrid();
-      resetHistory();
+    gridSize = parseInt(event.target.value);
+    document.getElementById('display-grid-size').textContent = `${gridSize} x ${gridSize}`;
+    grid.replaceChildren();
+    createGrid();
+    resetHistory();
   }
 }
 
 
 function createGrid() {
-    for (let i = 0; i < (gridSize * gridSize); i++) {
-        const cell = document.createElement('div');
-        cell.style.backgroundColor = oneColorMode.eraser;
-        cell.className = 'empty-cell';
-        grid.appendChild(cell);
-    };
-    grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-    grid.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
-    cellList.update();
+  for (let i = 0; i < (gridSize * gridSize); i++) {
+    const cell = document.createElement('div');
+    cell.style.backgroundColor = oneColorMode.eraser;
+    cell.className = 'empty-cell';
+    grid.appendChild(cell);
+  };
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+  grid.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+  cellList.update();
 }
 
 function setHoverCellColor(newColor) {
-    const r = document.querySelector(':root');
-    r.style.setProperty('--hover-cell-color', newColor);
+  const r = document.querySelector(':root');
+  r.style.setProperty('--hover-cell-color', newColor);
 }
 
 
 createGrid();
-
 
 
 // rotate left / right
@@ -617,6 +607,7 @@ function invertCellsColors() {
     cell.style.backgroundColor = `rgb(${rgbInverted.join()})`;
   })
 }
+
 
 // download image
 const DEFAULT_IMAGE_SIZE = 400;
