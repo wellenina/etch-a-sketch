@@ -272,7 +272,7 @@ const bucket = {
     const coordinates = [yIndex-1, xIndex, yIndex, xIndex-1, yIndex, xIndex+1, yIndex+1, xIndex];
     for (let i = 0; i < 8; i+=2) {
       if (coordinates[i] < 0 || coordinates[i] >= gridSize || coordinates[i+1] < 0 || coordinates[i+1] >= gridSize) {
-        break;
+        continue;
       }
       if (cellList.cellsInRows[coordinates[i]][coordinates[i+1]].style.backgroundColor === this.currentColor &&
         !this.cellsToFill.includes(cellList.cellsInRows[coordinates[i]][coordinates[i+1]])) {
